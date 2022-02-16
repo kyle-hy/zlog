@@ -3,8 +3,8 @@ package logger
 import (
 	"fmt"
 	"os"
-	"test/zaplog"
 
+	"github.com/kyle-hy/zaplog"
 	"github.com/v2pro/plz/gls"
 )
 
