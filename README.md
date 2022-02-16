@@ -16,6 +16,7 @@ zaplog.InitLog(zaplog.BufioSize(1024*8), zaplog.WithFields(map[string]interface{
 
 ## 测试结果
 
+MacBook Pro (13-inch, M1, 2020) 
 起1000个协程，总共写1000w条日志
 * 有bufio：1.099µs/p
 * 无bufio：3.089µs/p
