@@ -6,7 +6,7 @@
   * 循环读channel缓存的日志、通过bufio合并写入文件，len(channel)为0则对bufio直接Flush。
   * 使用lumberjack滚动日志
 
-* TODO:后台写文件的协程，可使用runtime.SetFinalizer优化，更优雅。
+* TODO:后台写文件的协程，可使用runtime.SetFinalizer优化，更优雅地通过GC关闭。
 
 ## 使用方式
 需要执行InitLog函数初始化
