@@ -12,22 +12,22 @@ const (
 
 // Options 属性
 type Options struct {
-	testEnv     bool                   // 测试环境日志级别为debug
-	processName string                 // 进程名称
-	logPath     string                 // 日志路径
-	withGID     bool                   // 打印协程id
-	stdout      bool                   // 日志同时打印到标准输出
-	overflow    bool                   // 日志缓存管道溢出则丢弃日志
-	bufioSize   int                    // 写文件io的缓存大小
-	fields      map[string]interface{} // 日志默认附加的字段
+	testEnv   bool                   // 测试环境日志级别为debug
+	logPath   string                 // 日志路径
+	withGID   bool                   // 打印协程id
+	stdout    bool                   // 日志同时打印到标准输出
+	overflow  bool                   // 日志缓存管道溢出则丢弃日志
+	rotate    bool                   // 是否使用lumberjack滚动日志
+	bufioSize int                    // 写文件io的缓存大小
+	fields    map[string]interface{} // 日志默认附加的字段
 }
 
-var defaultLogOptions = Options{
-	testEnv:     true,
-	processName: processName(),
-	withGID:     false,
-	overflow:    false,
-	bufioSize:   1024 * 8,
+var defaultOptions = Options{
+	testEnv:   true,
+	withGID:   false,
+	overflow:  false,
+	rotate:    true,
+	bufioSize: 1024 * 8,
 }
 
 // 由于日志文件配套工具有相关限制，故不提供灵活的文件路径
@@ -74,6 +74,13 @@ func LogPath(logPath string) Option {
 	}
 }
 
+// Rotate 滚动日志
+func Rotate(rotate bool) Option {
+	return func(o *Options) {
+		o.rotate = rotate
+	}
+}
+
 // WithFields 所有日志都附带的字段
 func WithFields(fields map[string]interface{}) Option {
 	return func(o *Options) {
@@ -92,12 +99,5 @@ func Stdout(stdout bool) Option {
 func TestEnv(testEnv bool) Option {
 	return func(o *Options) {
 		o.testEnv = testEnv
-	}
-}
-
-// ProcessName 服务进程名称,默认二进制文件名
-func ProcessName(processName string) Option {
-	return func(o *Options) {
-		o.processName = processName
 	}
 }

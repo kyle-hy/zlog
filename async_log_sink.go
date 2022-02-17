@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/url"
+	"os"
+	"path/filepath"
 	"sync"
 	"sync/atomic"
 
@@ -46,19 +48,35 @@ type AsyncLogSink struct {
 
 // AsyncLoggerSink 定义工厂函数
 func AsyncLoggerSink(url *url.URL) (sink zap.Sink, err error) {
-	jack := &lumberjack.Logger{
-		Filename:   getLogFilePath(&defaultLogOptions),
-		Compress:   false,
-		LocalTime:  true,
-		MaxSize:    maxFileSize,
-		MaxBackups: maxBackups,
-		MaxAge:     maxAge,
+	var writer io.WriteCloser
+	filePath := getLogFilePath(&defaultOptions)
+
+	if defaultOptions.rotate {
+		writer = &lumberjack.Logger{
+			Filename:   filePath,
+			Compress:   false,
+			LocalTime:  true,
+			MaxSize:    maxFileSize,
+			MaxBackups: maxBackups,
+			MaxAge:     maxAge,
+		}
+	} else {
+		err := os.MkdirAll(filepath.Dir(filePath), 0755)
+		if err != nil {
+			return nil, err
+		}
+		openFlag := os.O_CREATE | os.O_WRONLY | os.O_APPEND // 使用第三方程序rotate的话，用append模式打开，否则会形成空洞的大文件
+		writer, err = os.OpenFile(filePath, openFlag, os.FileMode(0644))
+		if err != nil {
+			return nil, err
+		}
 	}
-	bw := bufio.NewWriterSize(jack, defaultLogOptions.bufioSize)
+
+	bw := bufio.NewWriterSize(writer, defaultOptions.bufioSize)
 	wc := &WriteCloseFlusher{
 		Writer:  bw,
 		Flusher: bw,
-		Closer:  jack,
+		Closer:  writer,
 	}
 	c := &AsyncLogSink{
 		writer:   wc,
@@ -101,7 +119,7 @@ func (c *AsyncLogSink) Write(p []byte) (n int, err error) {
 	cp := make([]byte, len(p))
 	copy(cp, p)
 
-	if !defaultLogOptions.overflow {
+	if !defaultOptions.overflow {
 		c.msgChans <- cp
 	} else {
 		select {

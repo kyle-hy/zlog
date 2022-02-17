@@ -25,12 +25,11 @@ func InnerLog() *zap.Logger {
 func InitLog(opts ...Option) error {
 	closeLog()
 
-	config := defaultLogOptions
 	for _, opt := range opts {
-		opt(&config)
+		opt(&defaultOptions)
 	}
 
-	innerLog, err := newLogger(&config)
+	innerLog, err := newLogger(&defaultOptions)
 	if err != nil {
 		return err
 	}
@@ -216,7 +215,7 @@ func LogLevelEnable(level zapcore.Level) bool {
 }
 
 func addGoID(fields []zapcore.Field) []zapcore.Field {
-	if defaultLogOptions.withGID {
+	if defaultOptions.withGID {
 		return append(fields, GoID(gls.GoID()))
 	}
 	return fields
