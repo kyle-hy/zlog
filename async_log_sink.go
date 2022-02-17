@@ -1,4 +1,4 @@
-package zaplog
+package zlog
 
 import (
 	"bufio"
@@ -33,8 +33,8 @@ type WriteCloseFlusher struct {
 	Flusher
 }
 
-// Logger 定义一个结构体
-type Logger struct {
+// AsyncLogSink 定义一个结构体
+type AsyncLogSink struct {
 	closed     bool
 	failCounts uint64
 	msgChans   chan []byte
@@ -60,7 +60,7 @@ func AsyncLoggerSink(url *url.URL) (sink zap.Sink, err error) {
 		Flusher: bw,
 		Closer:  jack,
 	}
-	c := &Logger{
+	c := &AsyncLogSink{
 		writer:   wc,
 		msgChans: make(chan []byte, maxChanSize),
 	}
@@ -76,13 +76,13 @@ func AsyncLoggerSink(url *url.URL) (sink zap.Sink, err error) {
 }
 
 // Sync 定义Sync方法以实现Sink接口
-func (c *Logger) Sync() error {
+func (c *AsyncLogSink) Sync() error {
 	c.Close()
 	return nil
 }
 
 // Close 定义Close方法以实现Sink接口
-func (c *Logger) Close() error {
+func (c *AsyncLogSink) Close() error {
 	if c.closed {
 		return nil
 	}
@@ -96,7 +96,7 @@ func (c *Logger) Close() error {
 }
 
 // 定义Write方法以实现Sink接口
-func (c *Logger) Write(p []byte) (n int, err error) {
+func (c *AsyncLogSink) Write(p []byte) (n int, err error) {
 	// zap框架复用切片p参数,需要拷贝否则错乱
 	cp := make([]byte, len(p))
 	copy(cp, p)
@@ -122,7 +122,7 @@ func addField(failCounts uint64, name string, msg []byte) []byte {
 	return b
 }
 
-func (c *Logger) loop() {
+func (c *AsyncLogSink) loop() {
 	defer func() {
 		recover()
 	}()

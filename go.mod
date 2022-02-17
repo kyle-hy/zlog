@@ -1,4 +1,4 @@
-module github.com/kyle-hy/zaplog
+module github.com/kyle-hy/zlog
 
 go 1.17
 
