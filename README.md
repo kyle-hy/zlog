@@ -17,6 +17,6 @@ zaplog.InitLog(zaplog.BufioSize(1024*8), zaplog.WithFields(map[string]interface{
 ## 测试结果
 
 MacBook Pro (13-inch, M1, 2020) 
-起1000个协程，总共写1000w条日志
-* 有bufio：1.099µs/p
-* 无bufio：3.089µs/p
+起1000个协程，总共写1000w条日志，有无写缓存的对比：
+* 有bufio：缓存日志异步合并写文件，降低io消耗。每条日志耗时为1.099µs/p
+* 无bufio：缓存日志异步写，本质问题高频io没有解决，每条日志耗时为3.089µs/p
