@@ -16,8 +16,8 @@ var (
 	initOnce    sync.Once
 )
 
-// InnerLog  获取 appInnerLog
-func InnerLog() *zap.Logger {
+// GetLogger  获取 appInnerLog
+func GetLogger() *zap.Logger {
 	return appInnerLog
 }
 

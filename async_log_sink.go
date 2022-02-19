@@ -54,7 +54,7 @@ func AsyncLoggerSink(url *url.URL) (sink zap.Sink, err error) {
 	if defaultOptions.rotate {
 		writer = &lumberjack.Logger{
 			Filename:   filePath,
-			Compress:   false,
+			Compress:   true,
 			LocalTime:  true,
 			MaxSize:    maxFileSize,
 			MaxBackups: maxBackups,
