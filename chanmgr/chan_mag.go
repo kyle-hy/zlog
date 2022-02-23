@@ -38,9 +38,9 @@ func (cm *ChanMgr) NextRead() (chan []byte, uint64) {
 	return cm.chans[modPow2(idx, cm.size)], idx
 }
 
-// GetNextLen 获取下一个管道的长度
-func (cm *ChanMgr) GetNextLen(idx uint64) int {
-	return len(cm.chans[modPow2(idx+1, cm.size)])
+// Len 获取管道的长度
+func (cm *ChanMgr) Len(idx uint64) int {
+	return len(cm.chans[modPow2(idx, cm.size)])
 }
 
 // Close 关闭所有管道

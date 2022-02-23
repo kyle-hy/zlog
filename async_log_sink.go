@@ -173,7 +173,7 @@ func (c *AsyncLogSink) loop() {
 			msg = nil
 		}
 
-		if c.chanMgr.GetNextLen(idx) == 0 {
+		if c.chanMgr.Len(idx+1) == 0 {
 			c.writer.Flush()
 		}
 	}
