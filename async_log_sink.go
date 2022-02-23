@@ -163,7 +163,6 @@ func (c *AsyncLogSink) loop() {
 			case msg = <-msgChan:
 			default:
 				c.writer.Flush()
-				c.chanMgr.Close()
 				return
 			}
 		}
