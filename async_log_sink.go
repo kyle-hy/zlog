@@ -12,6 +12,7 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/kyle-hy/zlog/chanmgr"
 	"go.uber.org/zap"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
@@ -39,7 +40,7 @@ type WriteCloseFlusher struct {
 type AsyncLogSink struct {
 	closed     bool
 	failCounts uint64
-	msgChans   chan []byte
+	chanMgr    *chanmgr.ChanMgr
 	writer     *WriteCloseFlusher
 	ctx        context.Context
 	cancel     context.CancelFunc
@@ -79,8 +80,8 @@ func AsyncLoggerSink(url *url.URL) (sink zap.Sink, err error) {
 		Closer:  writer,
 	}
 	c := &AsyncLogSink{
-		writer:   wc,
-		msgChans: make(chan []byte, maxChanSize),
+		writer:  wc,
+		chanMgr: chanmgr.NewChanMgr(512, maxChanSize/512),
 	}
 
 	c.ctx, c.cancel = context.WithCancel(context.Background())
@@ -119,15 +120,16 @@ func (c *AsyncLogSink) Write(p []byte) (n int, err error) {
 	cp := make([]byte, len(p))
 	copy(cp, p)
 
+	msgChan, _ := c.chanMgr.NextWrite()
 	if !defaultOptions.overflow {
-		c.msgChans <- cp
+		msgChan <- cp
 	} else {
 		select {
-		case c.msgChans <- cp:
+		case msgChan <- cp:
 		default:
 			failCounts := atomic.AddUint64(&c.failCounts, 1)
 			if failCounts%100 == 0 {
-				c.msgChans <- addField(failCounts, "blockNums", cp)
+				msgChan <- addField(failCounts, "blockNums", cp)
 			}
 		}
 	}
@@ -149,17 +151,19 @@ func (c *AsyncLogSink) loop() {
 	closed := false
 
 	for {
+		msgChan, idx := c.chanMgr.NextRead()
 		if !closed {
 			select {
-			case msg = <-c.msgChans:
+			case msg = <-msgChan:
 			case <-c.ctx.Done():
 				closed = true
 			}
 		} else {
 			select {
-			case msg = <-c.msgChans:
+			case msg = <-msgChan:
 			default:
 				c.writer.Flush()
+				c.chanMgr.Close()
 				return
 			}
 		}
@@ -169,7 +173,7 @@ func (c *AsyncLogSink) loop() {
 			msg = nil
 		}
 
-		if len(c.msgChans) == 0 {
+		if c.chanMgr.GetNextLen(idx) == 0 {
 			c.writer.Flush()
 		}
 	}
