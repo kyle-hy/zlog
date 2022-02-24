@@ -69,7 +69,7 @@ func newLogger(opt *Options) (*zap.Logger, error) {
 		Level:             logLevel,
 		Development:       false,
 		DisableCaller:     false,
-		DisableStacktrace: true,
+		DisableStacktrace: false,
 		Sampling:          nil,
 		Encoding:          "json",
 		EncoderConfig: zapcore.EncoderConfig{

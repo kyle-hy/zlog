@@ -6,7 +6,6 @@ import (
 
 // NewChanMgr .
 func NewChanMgr(sliceSize, chanSize uint64) *ChanMgr {
-
 	sliceSize = nextPow2(sliceSize)
 	chans := make([]chan []byte, sliceSize, sliceSize)
 	for i := 0; i < int(sliceSize); i++ {
