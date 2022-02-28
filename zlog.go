@@ -202,7 +202,6 @@ func Fatal(msg string, fields ...zapcore.Field) {
 // Sync calls the underlying syslogCore's Sync method, flushing any buffered log
 // entries. Applications should take care to call Sync before exiting.
 func Sync() error {
-	Info("log closed")
 	if appInnerLog != nil {
 		return appInnerLog.Sync()
 	}
