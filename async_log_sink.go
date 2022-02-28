@@ -81,7 +81,7 @@ func AsyncLoggerSink(url *url.URL) (sink zap.Sink, err error) {
 	}
 	c := &AsyncLogSink{
 		writer:  wc,
-		chanMgr: chanmgr.NewChanMgr(512, maxChanSize/512),
+		chanMgr: chanmgr.NewChanMgr(256, maxChanSize/256),
 	}
 
 	c.ctx, c.cancel = context.WithCancel(context.Background())
