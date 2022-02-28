@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/kyle-hy/zlog/chanmgr"
 	"go.uber.org/zap"
@@ -102,6 +103,8 @@ func (c *AsyncLogSink) Sync() error {
 
 // Close 定义Close方法以实现Sink接口
 func (c *AsyncLogSink) Close() error {
+	time.Sleep(time.Millisecond * 2) // 短暂等待日志写入管道
+
 	if c.closed {
 		return nil
 	}

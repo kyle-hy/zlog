@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 const (
@@ -12,7 +15,7 @@ const (
 
 // Options 属性
 type Options struct {
-	testEnv   bool                   // 测试环境日志级别为debug
+	level     zapcore.Level          // 测试环境日志级别为debug
 	logPath   string                 // 日志路径
 	withGID   bool                   // 打印协程id
 	stdout    bool                   // 日志同时打印到标准输出
@@ -23,7 +26,7 @@ type Options struct {
 }
 
 var defaultOptions = Options{
-	testEnv:   true,
+	level:     zap.DebugLevel,
 	withGID:   false,
 	overflow:  false,
 	rotate:    true,
@@ -95,9 +98,23 @@ func Stdout(stdout bool) Option {
 	}
 }
 
-// TestEnv 是否是测试环境
-func TestEnv(testEnv bool) Option {
+// DebugLevel debug日志等级
+func DebugLevel() Option {
 	return func(o *Options) {
-		o.testEnv = testEnv
+		o.level = zap.DebugLevel
+	}
+}
+
+// InfoLevel info日志等级
+func InfoLevel() Option {
+	return func(o *Options) {
+		o.level = zap.InfoLevel
+	}
+}
+
+// WarnLevel warn日志等级
+func WarnLevel() Option {
+	return func(o *Options) {
+		o.level = zap.WarnLevel
 	}
 }

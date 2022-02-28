@@ -50,11 +50,6 @@ func epochFullTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 
 // newLogger 初始化日志
 func newLogger(opt *Options) (*zap.Logger, error) {
-	logLevel := zap.NewAtomicLevelAt(zap.DebugLevel)
-	if opt.testEnv {
-		logLevel = zap.NewAtomicLevelAt(zap.InfoLevel)
-	}
-
 	// 将AsyncLoggerSink工厂函数注册到zap中, 自定义协议名为 AsyncLog
 	if err := zap.RegisterSink("AsyncLog", AsyncLoggerSink); err != nil {
 		fmt.Println(err)
@@ -65,6 +60,7 @@ func newLogger(opt *Options) (*zap.Logger, error) {
 		outPaths = append(outPaths, "stdout")
 	}
 
+	logLevel := zap.NewAtomicLevelAt(opt.level)
 	var zc = zap.Config{
 		Level:             logLevel,
 		Development:       false,
@@ -199,8 +195,7 @@ func Fatal(msg string, fields ...zapcore.Field) {
 	}
 }
 
-// Sync calls the underlying syslogCore's Sync method, flushing any buffered log
-// entries. Applications should take care to call Sync before exiting.
+// Sync flush日志到文件，并关闭日志
 func Sync() error {
 	if appInnerLog != nil {
 		return appInnerLog.Sync()
