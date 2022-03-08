@@ -79,7 +79,7 @@ func newLogger(opt *Options) (*zap.Logger, error) {
 			EncodeLevel:    zapcore.LowercaseLevelEncoder,
 			EncodeTime:     epochFullTimeEncoder, // EncodeTime: zapcore.ISO8601TimeEncoder,
 			EncodeDuration: zapcore.StringDurationEncoder,
-			EncodeCaller:   zapcore.ShortCallerEncoder,
+			EncodeCaller:   callerEncoder,
 			EncodeName:     zapcore.FullNameEncoder,
 		},
 		OutputPaths:      outPaths,
